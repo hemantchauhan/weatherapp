@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weatherapp/src/core/cache/hive_container.dart';
 import 'package:weatherapp/src/core/di/di_container.dart' as di;
 import 'package:weatherapp/src/presentation/cubit/weather_cubit.dart';
 import 'package:weatherapp/src/presentation/screens/weather_screen.dart';
 
 void main() async {
+  // Initialize Hive
+  await HiveContainer.init();
+
   // Initialize dependency injection
   await di.init();
 
