@@ -6,6 +6,7 @@ import 'package:weatherapp/src/data/repositories/weather_repository_impl.dart';
 import 'package:weatherapp/src/domain/repositories/weather_repository.dart';
 import 'package:weatherapp/src/domain/usecases/get_current_weather.dart';
 import 'package:weatherapp/src/domain/usecases/get_forecast.dart';
+import 'package:weatherapp/src/presentation/cubit/weather_cubit.dart';
 
 final getIt = GetIt.instance;
 
@@ -46,4 +47,13 @@ Future<void> init() async {
 
   // Services
   getIt.registerLazySingleton<LocationService>(() => LocationServiceImpl());
+
+  // Cubits/Blocs
+  getIt.registerFactory<WeatherCubit>(
+    () => WeatherCubit(
+      getCurrentWeather: getIt<GetCurrentWeather>(),
+      getForecast: getIt<GetForecast>(),
+      locationService: getIt<LocationService>(),
+    ),
+  );
 }
