@@ -10,6 +10,31 @@ enum WeatherType {
   unknown,
 }
 
+class WeatherTypeMapper {
+  static WeatherType fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'clear':
+        return WeatherType.clear;
+      case 'clouds':
+        return WeatherType.clouds;
+      case 'rain':
+        return WeatherType.rain;
+      case 'drizzle':
+        return WeatherType.drizzle;
+      case 'thunderstorm':
+        return WeatherType.thunderstorm;
+      case 'snow':
+        return WeatherType.snow;
+      case 'mist':
+        return WeatherType.mist;
+      case 'fog':
+        return WeatherType.fog;
+      default:
+        return WeatherType.unknown;
+    }
+  }
+}
+
 class Location {
   final String cityName;
   final String country;
