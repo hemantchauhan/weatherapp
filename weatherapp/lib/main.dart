@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:weatherapp/src/core/di/di_container.dart' as di;
 
-void main() {
+void main() async {
+  // Initialize dependency injection
+  await di.init();
+
   runApp(const MyApp());
 }
 
