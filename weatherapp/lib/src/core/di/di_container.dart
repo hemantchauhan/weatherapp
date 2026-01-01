@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:weatherapp/src/core/cache/hive_constants.dart';
 import 'package:weatherapp/src/core/services/location_service.dart';
+import 'package:weatherapp/src/data/datasources/weather_local_datasource.dart';
 import 'package:weatherapp/src/data/datasources/weather_remote_datasource.dart';
 import 'package:weatherapp/src/data/repositories/weather_repository_impl.dart';
 import 'package:weatherapp/src/domain/repositories/weather_repository.dart';
@@ -31,9 +34,19 @@ Future<void> init() async {
     () => WeatherRemoteDataSourceImpl(dio: getIt<Dio>(), apiKey: apiKey),
   );
 
+  // Local data source (cache)
+  getIt.registerLazySingleton<WeatherLocalDataSource>(
+    () => WeatherLocalDataSourceImpl(
+      box: Hive.box<String>(HiveConstants.weatherCacheBox),
+    ),
+  );
+
   // Repositories
   getIt.registerLazySingleton<WeatherRepository>(
-    () => WeatherRepositoryImpl(getIt<WeatherRemoteDataSource>()),
+    () => WeatherRepositoryImpl(
+      getIt<WeatherRemoteDataSource>(),
+      getIt<WeatherLocalDataSource>(),
+    ),
   );
 
   // Use cases

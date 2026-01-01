@@ -1,4 +1,5 @@
 import 'package:weatherapp/src/core/utils/result.dart';
+import 'package:weatherapp/src/data/datasources/weather_local_datasource.dart';
 import 'package:weatherapp/src/data/datasources/weather_remote_datasource.dart';
 import 'package:weatherapp/src/data/models/forecast_model.dart';
 import 'package:weatherapp/src/data/models/weather_model.dart';
@@ -8,8 +9,9 @@ import 'package:weatherapp/src/domain/repositories/weather_repository.dart';
 
 class WeatherRepositoryImpl implements WeatherRepository {
   final WeatherRemoteDataSource remoteDataSource;
+  final WeatherLocalDataSource localDataSource;
 
-  WeatherRepositoryImpl(this.remoteDataSource);
+  WeatherRepositoryImpl(this.remoteDataSource, this.localDataSource);
 
   @override
   Future<Result<Weather>> getCurrentWeather({
@@ -17,9 +19,29 @@ class WeatherRepositoryImpl implements WeatherRepository {
     required double longitude,
   }) async {
     try {
+      // Try cache first
+      final cachedData = await localDataSource.getCachedCurrentWeather(
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      if (cachedData != null) {
+        final model = CurrentWeatherModel.fromJson(cachedData);
+        final entity = model.toEntity();
+        return Success(entity);
+      }
+
+      // Otherwise fetch from remote
       final json = await remoteDataSource.getCurrentWeather(
         latitude: latitude,
         longitude: longitude,
+      );
+
+      // Cache the responae
+      await localDataSource.cacheCurrentWeather(
+        latitude: latitude,
+        longitude: longitude,
+        weatherData: json,
       );
 
       final model = CurrentWeatherModel.fromJson(json);
@@ -40,9 +62,29 @@ class WeatherRepositoryImpl implements WeatherRepository {
     required double longitude,
   }) async {
     try {
+      // Try cache first
+      final cachedData = await localDataSource.getCachedForecast(
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      if (cachedData != null) {
+        final model = ForecastResponseModel.fromJson(cachedData);
+        final entity = model.toEntity();
+        return Success(entity);
+      }
+
+      // Otherwise fetch from remote
       final json = await remoteDataSource.get5DayForecast(
         latitude: latitude,
         longitude: longitude,
+      );
+
+      // Cache the response
+      await localDataSource.cacheForecast(
+        latitude: latitude,
+        longitude: longitude,
+        forecastData: json,
       );
 
       final model = ForecastResponseModel.fromJson(json);
