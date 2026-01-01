@@ -24,10 +24,13 @@ abstract class WeatherLocalDataSource {
     required double longitude,
     required Map<String, dynamic> forecastData,
   });
+
+  Future<void> clearCache();
 }
 
 class WeatherLocalDataSourceImpl implements WeatherLocalDataSource {
   final Box<String> box;
+  static const Duration cacheValidDuration = Duration(hours: 1);
 
   WeatherLocalDataSourceImpl({required this.box});
 
@@ -43,6 +46,15 @@ class WeatherLocalDataSourceImpl implements WeatherLocalDataSource {
       final timestamp = data['timestamp'] as int?;
 
       if (timestamp == null) return null;
+
+      // Check if cache valid
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final now = DateTime.now();
+
+      if (now.difference(cacheTime) > cacheValidDuration) {
+        // Cache expired
+        return null;
+      }
 
       return data['data'] as Map<String, dynamic>?;
     } catch (e) {
@@ -96,5 +108,10 @@ class WeatherLocalDataSourceImpl implements WeatherLocalDataSource {
     final key = getCacheKey('forecast', latitude, longitude);
     final cachedJson = box.get(key);
     return parseCachedData(cachedJson);
+  }
+
+  @override
+  Future<void> clearCache() async {
+    await box.clear();
   }
 }
