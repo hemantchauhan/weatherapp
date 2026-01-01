@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:weatherapp/src/core/utils/error_mapper.dart';
 
 abstract class WeatherRemoteDataSource {
   Future<Map<String, dynamic>> getCurrentWeather({
@@ -41,9 +42,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
 
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw Exception(
-        'Failed to fetch current weather: ${e.message ?? 'Unknown error'}',
-      );
+      throw ErrorMapper.mapToException(e);
     }
   }
 
@@ -65,9 +64,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
 
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      throw Exception(
-        'Failed to fetch forecast: ${e.message ?? 'Unknown error'}',
-      );
+      throw ErrorMapper.mapToException(e);
     }
   }
 }
