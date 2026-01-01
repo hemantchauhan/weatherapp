@@ -27,8 +27,7 @@ Future<void> init() async {
     ),
   );
 
-  const String apiKey =
-      '3ae9e752fb7aae1fb6c4e8ae01647e98'; // TODO: Move to environment config
+  const String apiKey = 'YOUR_API_KEY_HERE'; // TODO: Move to environment config
 
   // Data sources
   getIt.registerLazySingleton<WeatherRemoteDataSource>(
