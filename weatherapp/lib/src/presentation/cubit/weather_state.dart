@@ -15,13 +15,23 @@ class WeatherLoading extends WeatherState {
 class WeatherLoaded extends WeatherState {
   final Weather currentWeather;
   final Forecast? forecast;
+  final bool isFromCache; // If data is from cache
 
-  const WeatherLoaded({required this.currentWeather, this.forecast});
+  const WeatherLoaded({
+    required this.currentWeather,
+    this.forecast,
+    this.isFromCache = false,
+  });
 
-  WeatherLoaded copyWith({Weather? currentWeather, Forecast? forecast}) {
+  WeatherLoaded copyWith({
+    Weather? currentWeather,
+    Forecast? forecast,
+    bool? isFromCache,
+  }) {
     return WeatherLoaded(
       currentWeather: currentWeather ?? this.currentWeather,
       forecast: forecast ?? this.forecast,
+      isFromCache: isFromCache ?? this.isFromCache,
     );
   }
 }

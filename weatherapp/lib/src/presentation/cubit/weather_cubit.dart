@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:weatherapp/src/core/services/location_service.dart';
 import 'package:weatherapp/src/core/utils/result.dart';
 import 'package:weatherapp/src/domain/usecases/get_current_weather.dart';
@@ -9,12 +10,15 @@ class WeatherCubit extends Cubit<WeatherState> {
   final GetCurrentWeather getCurrentWeather;
   final GetForecast getForecast;
   final LocationService locationService;
+  final Connectivity connectivity;
 
   WeatherCubit({
     required this.getCurrentWeather,
     required this.getForecast,
     required this.locationService,
-  }) : super(const WeatherLoading());
+    Connectivity? connectivity,
+  }) : connectivity = connectivity ?? Connectivity(),
+       super(const WeatherLoading());
 
   Future<void> loadWeatherFromLocation() async {
     emit(const WeatherLoading());
@@ -72,6 +76,10 @@ class WeatherCubit extends Cubit<WeatherState> {
       return;
     }
 
+    // Check connectivity
+    final connectivityResult = await connectivity.checkConnectivity();
+    final isOffline = connectivityResult.contains(ConnectivityResult.none);
+
     // Load forecast
     final forecastResult = await getForecast.call(
       latitude: location.latitude,
@@ -86,13 +94,23 @@ class WeatherCubit extends Cubit<WeatherState> {
     final forecast = (forecastResult as Success).data;
 
     // Update state with forecast
-    emit(currentState.copyWith(forecast: forecast));
+    // If offline and we have cached data
+    emit(
+      currentState.copyWith(
+        forecast: forecast,
+        isFromCache: isOffline || currentState.isFromCache,
+      ),
+    );
   }
 
   Future<void> _loadWeatherData({
     required double latitude,
     required double longitude,
   }) async {
+    // Check connectivity status
+    final connectivityResult = await connectivity.checkConnectivity();
+    final isOffline = connectivityResult.contains(ConnectivityResult.none);
+
     // Load current weather
     final weatherResult = await getCurrentWeather.call(
       latitude: latitude,
@@ -106,6 +124,6 @@ class WeatherCubit extends Cubit<WeatherState> {
 
     final weather = (weatherResult as Success).data;
 
-    emit(WeatherLoaded(currentWeather: weather));
+    emit(WeatherLoaded(currentWeather: weather, isFromCache: isOffline));
   }
 }

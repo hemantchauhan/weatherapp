@@ -4,6 +4,7 @@ import 'package:weatherapp/src/presentation/cubit/weather_cubit.dart';
 import 'package:weatherapp/src/presentation/cubit/weather_state.dart';
 import 'package:weatherapp/src/presentation/widgets/current_weather_widget.dart';
 import 'package:weatherapp/src/presentation/widgets/forecast_list_widget.dart';
+import 'package:weatherapp/src/presentation/widgets/offline_banner.dart';
 
 class WeatherScreen extends StatelessWidget {
   const WeatherScreen({super.key});
@@ -57,62 +58,71 @@ class WeatherScreen extends StatelessWidget {
                 // Responsive layout
                 final isPortrait = constraints.maxHeight > constraints.maxWidth;
 
-                if (isPortrait) {
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<WeatherCubit>().refreshWeather();
-                    },
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        children: [
-                          CurrentWeatherWidget(weather: state.currentWeather),
-                          if (state.forecast != null)
-                            ForecastListWidget(forecast: state.forecast!)
-                          else
-                            loadForecastButton(context),
-                        ],
-                      ),
-                    ),
-                  );
-                } else {
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context.read<WeatherCubit>().refreshWeather();
-                    },
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: SingleChildScrollView(
-                              child: CurrentWeatherWidget(
-                                weather: state.currentWeather,
-                              ),
+                final content =
+                    isPortrait
+                        ? RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<WeatherCubit>().refreshWeather();
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Column(
+                              children: [
+                                CurrentWeatherWidget(
+                                  weather: state.currentWeather,
+                                ),
+                                if (state.forecast != null)
+                                  ForecastListWidget(forecast: state.forecast!)
+                                else
+                                  loadForecastButton(context),
+                              ],
                             ),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child:
-                                state.forecast != null
-                                    ? ForecastListWidget(
-                                      forecast: state.forecast!,
-                                    )
-                                    : Center(
-                                      child: loadForecastButton(context),
+                        )
+                        : RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<WeatherCubit>().refreshWeather();
+                          },
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 1,
+                                  child: SingleChildScrollView(
+                                    child: CurrentWeatherWidget(
+                                      weather: state.currentWeather,
                                     ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child:
+                                      state.forecast != null
+                                          ? ForecastListWidget(
+                                            forecast: state.forecast!,
+                                          )
+                                          : Center(
+                                            child: loadForecastButton(context),
+                                          ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
+                        );
+
+                // Show offline banner if data is from cache
+                if (state.isFromCache) {
+                  return Column(
+                    children: [const OfflineBanner(), Expanded(child: content)],
                   );
                 }
+
+                return content;
               },
             );
           }
-
           return const SizedBox.shrink();
         },
       ),

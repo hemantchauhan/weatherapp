@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -60,6 +61,7 @@ Future<void> init() async {
 
   // Services
   getIt.registerLazySingleton<LocationService>(() => LocationServiceImpl());
+  getIt.registerLazySingleton<Connectivity>(() => Connectivity());
 
   // Cubits/Blocs
   getIt.registerFactory<WeatherCubit>(
@@ -67,6 +69,7 @@ Future<void> init() async {
       getCurrentWeather: getIt<GetCurrentWeather>(),
       getForecast: getIt<GetForecast>(),
       locationService: getIt<LocationService>(),
+      connectivity: getIt<Connectivity>(),
     ),
   );
 }
