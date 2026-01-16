@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:weatherapp/src/core/utils/error_mapper.dart';
 import 'package:weatherapp/src/core/utils/result.dart';
 import 'package:weatherapp/src/data/datasources/weather_local_datasource.dart';
 import 'package:weatherapp/src/data/datasources/weather_remote_datasource.dart';
@@ -50,8 +48,6 @@ class WeatherRepositoryImpl implements WeatherRepository {
       final entity = model.toEntity();
 
       return Success(entity);
-    } on DioException catch (e) {
-      return Failure(ErrorMapper.mapDioException(e), e);
     } on Exception catch (e) {
       return Failure(e.toString().replaceFirst('Exception: ', ''), e);
     } catch (e) {
@@ -97,8 +93,6 @@ class WeatherRepositoryImpl implements WeatherRepository {
       final entity = model.toEntity();
 
       return Success(entity);
-    } on DioException catch (e) {
-      return Failure(ErrorMapper.mapDioException(e), e);
     } on Exception catch (e) {
       return Failure(e.toString().replaceFirst('Exception: ', ''), e);
     } catch (e) {

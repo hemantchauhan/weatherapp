@@ -3,7 +3,9 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:weatherapp/src/core/cache/hive_constants.dart';
+import 'package:weatherapp/src/core/network/http_client.dart';
 import 'package:weatherapp/src/core/services/location_service.dart';
+import 'package:weatherapp/src/data/datasources/dio_http_client.dart';
 import 'package:weatherapp/src/data/datasources/weather_local_datasource.dart';
 import 'package:weatherapp/src/data/datasources/weather_remote_datasource.dart';
 import 'package:weatherapp/src/data/repositories/weather_repository_impl.dart';
@@ -27,11 +29,18 @@ Future<void> init() async {
     ),
   );
 
-  const String apiKey = 'YOUR_API_KEY_HERE'; // TODO: Move to environment config
+  // HTTP Client abstraction (Dio implementation)
+  getIt.registerLazySingleton<HttpClient>(() => DioHttpClient(getIt<Dio>()));
+
+  const String apiKey =
+      '3ae9e752fb7aae1fb6c4e8ae01647e98'; // TODO: Move to environment config
 
   // Data sources
   getIt.registerLazySingleton<WeatherRemoteDataSource>(
-    () => WeatherRemoteDataSourceImpl(dio: getIt<Dio>(), apiKey: apiKey),
+    () => WeatherRemoteDataSourceImpl(
+      client: getIt<HttpClient>(),
+      apiKey: apiKey,
+    ),
   );
 
   // Local data source (cache)

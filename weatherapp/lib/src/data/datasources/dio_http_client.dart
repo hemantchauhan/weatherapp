@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:weatherapp/src/core/network/http_client.dart';
 
-class ErrorMapper {
+/// Dio-specific error mapper (implementation detail)
+class _DioErrorMapper {
   static String mapDioException(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -64,8 +66,33 @@ class ErrorMapper {
     }
     return null;
   }
+}
 
-  static Exception mapToException(DioException error) {
-    return Exception(mapDioException(error));
+class DioHttpClient implements HttpClient {
+  final Dio dio;
+
+  DioHttpClient(this.dio);
+
+  @override
+  Future<HTTPResponse> get({
+    required String url,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
+  }) async {
+    try {
+      final response = await dio.get(
+        url,
+        queryParameters: queryParameters,
+        options: headers != null ? Options(headers: headers) : null,
+      );
+
+      return HTTPResponse(
+        data: response.data as Map<String, dynamic>,
+        statusCode: response.statusCode,
+        headers: response.headers.map,
+      );
+    } on DioException catch (e) {
+      throw Exception(_DioErrorMapper.mapDioException(e));
+    }
   }
 }

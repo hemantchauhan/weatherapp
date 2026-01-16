@@ -1,5 +1,4 @@
-import 'package:dio/dio.dart';
-import 'package:weatherapp/src/core/utils/error_mapper.dart';
+import 'package:weatherapp/src/core/network/http_client.dart';
 
 abstract class WeatherRemoteDataSource {
   Future<Map<String, dynamic>> getCurrentWeather({
@@ -14,12 +13,12 @@ abstract class WeatherRemoteDataSource {
 }
 
 class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
-  final Dio dio;
+  final HttpClient client;
   final String apiKey;
   final String baseUrl;
 
   WeatherRemoteDataSourceImpl({
-    required this.dio,
+    required this.client,
     required this.apiKey,
     this.baseUrl = 'https://api.openweathermap.org/data/2.5',
   });
@@ -29,21 +28,17 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
     required double latitude,
     required double longitude,
   }) async {
-    try {
-      final response = await dio.get(
-        '$baseUrl/weather',
-        queryParameters: {
-          'lat': latitude,
-          'lon': longitude,
-          'appid': apiKey,
-          'units': 'metric',
-        },
-      );
+    final response = await client.get(
+      url: '$baseUrl/weather',
+      queryParameters: {
+        'lat': latitude,
+        'lon': longitude,
+        'appid': apiKey,
+        'units': 'metric',
+      },
+    );
 
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw ErrorMapper.mapToException(e);
-    }
+    return response.data;
   }
 
   @override
@@ -51,20 +46,16 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
     required double latitude,
     required double longitude,
   }) async {
-    try {
-      final response = await dio.get(
-        '$baseUrl/forecast',
-        queryParameters: {
-          'lat': latitude,
-          'lon': longitude,
-          'appid': apiKey,
-          'units': 'metric',
-        },
-      );
+    final response = await client.get(
+      url: '$baseUrl/forecast',
+      queryParameters: {
+        'lat': latitude,
+        'lon': longitude,
+        'appid': apiKey,
+        'units': 'metric',
+      },
+    );
 
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw ErrorMapper.mapToException(e);
-    }
+    return response.data;
   }
 }
